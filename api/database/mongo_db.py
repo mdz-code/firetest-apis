@@ -6,10 +6,12 @@ class MongoDatabase:
         self.__mongoConnect = mongoConnect().client
         self.__db = self.__mongoConnect.firetest
         self.__questions_collection = self.__db.questions
-        self.__users_collection = self.__db.users
+        self.__users_collection = self.__db.users,
+        self.__simulates_collection = self.__db.simulates
         self.__dict_collection = {
             "questions": self.__questions_collection,
-            "users": self.__users_collection
+            "users": self.__users_collection,
+            "simulates": self.__simulates_collection
         }
 
     async def insert_one(self, collection_name, inserted_object, return_id=False):
@@ -22,4 +24,4 @@ class MongoDatabase:
 
     async def update_one(self, collection_name, query_object, inserted_object):
         collection = self.__dict_collection[collection_name]
-        return collection.update_one(query_object, inserted_object)
+        return collection.update_one(query_object, { "$set": inserted_object})

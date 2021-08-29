@@ -1,46 +1,45 @@
  
-from fastapi import status, APIRouter
+from fastapi import Depends, APIRouter
 from fastapi.responses import JSONResponse
+
+from ...config.jwt import JwtAuth
+from ...services.question_service import QuestionService
+from ...database.schemas import SimulateDTO
+
+jwe_handler = JwtAuth()
+question_service = QuestionService()
+
 from api.database.mongo_db import MongoDatabase
-
-
 mongo_database = MongoDatabase()
 
 questions = APIRouter(
     prefix="/questions"
 )
 
-@questions.get("/subjects", response_class=JSONResponse)
-async def subjects():
-    return { "endpoint": "subjects" }
+
 
 @questions.post("/start", response_class=JSONResponse)
-async def start():
-    return { "endpoint": "start" }
+async def start(dto: SimulateDTO, user_id=Depends(jwe_handler.auth_wrapper)):
+    response = await question_service.start_simulate(dto.train_mode, user_id, dto.object_infos)
+    return JSONResponse(status_code=response["status"], content=response["response"])
 
-@questions.post("/answers", response_class=JSONResponse)
-async def answers():
-    return { "endpoint": "answers" }
+@questions.post("/stop/{simulate_id}", response_class=JSONResponse)
+async def start(simulate_id: str, user_id=Depends(jwe_handler.auth_wrapper)):
+    response = await question_service.finsh_simulate(simulate_id)
+    return JSONResponse(status_code=response["status"], content=response["response"])
 
-@questions.post("/feedback", response_class=JSONResponse)
-async def feedback():
-    return { "endpoint": "feedback" }
+@questions.post("/answers_feedback", response_class=JSONResponse)
+async def answers(user_id=Depends(jwe_handler.auth_wrapper)):
+    return { "user_id": user_id }
 
 @questions.post("/reporter", response_class=JSONResponse)
-async def reporter():
-    return { "endpoint": "reporter" }
+async def reporter(user_id=Depends(jwe_handler.auth_wrapper)):
+    return { "user_id": user_id }
 
-@questions.get("/{question_id}")
-async def question(question_id: str):
-    inserted = await mongo_database.insert_one('questions', { "question": question_id}, True)
-    founded = await mongo_database.get_one('questions', { "_id": inserted})
-    print(founded)
+@questions.get("/{simulate_id}")
+async def question(simulate_id: str):
+    return { "simulate_id": simulate_id }
 
-    updated = await mongo_database.update_one('questions', { "_id": inserted}, { "$set": { "question": f"{question_id}123456" } })
-    founded = await mongo_database.get_one('questions', { "_id": inserted})
-    print(founded)
-
-
-    
-
-    return dict(founded)
+@questions.get("/subjects", response_class=JSONResponse)
+async def subjects(user_id: str = Depends(jwe_handler.auth_wrapper)):
+    return { "user_id": user_id }

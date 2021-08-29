@@ -7,7 +7,7 @@ SQLALCHEMY_DATABASE_URL = "postgresql://claftmkmejsnbz:e2ffbb0cd4b19b54aa4c207df
 # SQLALCHEMY_DATABASE_URL = "postgresql://user:password@postgresserver/db"
 
 engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+    SQLALCHEMY_DATABASE_URL, connect_args={}
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
