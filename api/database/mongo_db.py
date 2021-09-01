@@ -1,4 +1,5 @@
-from api.config.mongo import MongoDB as mongoConnect
+from ..config.mongo import MongoDB as mongoConnect
+from ..database.schemas import SimulateBase
 
 class MongoDatabase:
 
@@ -18,9 +19,23 @@ class MongoDatabase:
         collection = self.__dict_collection[collection_name]
         return  return_id and collection.insert_one(inserted_object).inserted_id or collection.insert_one(inserted_object)
 
-    async def get_one(self, collection_name, query_object, return_with_id=False):
+    async def get_one(self, collection_name, query_object, return_with_id=False) -> SimulateBase: 
         collection = self.__dict_collection[collection_name]
         return return_with_id and collection.find_one(query_object) or collection.find_one(query_object, {'_id': 0})
+
+    async def complex_query(self, collection_name, **kwargs):
+        pipelines = await self.__build_pipeline(kwargs)
+
+        # collection = self.__dict_collection[collection_name]
+        # return collection.find_one(pipelines)
+        return {
+            "selected_questions": True
+        }
+
+    async def __build_pipeline(self, kwargs):
+        print(kwargs)
+        # create pipeline object
+        return []
 
     async def update_one(self, collection_name, query_object, inserted_object):
         collection = self.__dict_collection[collection_name]

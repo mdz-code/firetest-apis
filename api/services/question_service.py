@@ -40,6 +40,24 @@ class QuestionService:
             "response": { "mensagem": "Esta nota já foi cancelada" }
         }
 
+    async def get_question_by_simulate(self, simulate_id: str):
+        simulate_infos = await self.__mongo_instance.get_one('simulates', { '_id': ObjectId(simulate_id)})
+        # get question with filters
+        # year, subjects, questions
+
+        selected_questions = await self.__mongo_instance.complex_query(
+                'somulates', 
+                year=simulate_infos['years'], 
+                subjects=simulate_infos['subjects'], 
+                questions=simulate_infos['questions']
+            )
+
+
+        return {
+            "status": status.HTTP_200_OK,
+            "response": selected_questions
+        }
+
     async def __is_finished(self, simulate_id: str):
         response = await self.__mongo_instance.get_one('simulates', { '_id': ObjectId(simulate_id) })
         end_time = response['end_time']
@@ -72,7 +90,7 @@ class QuestionService:
 """
     OK - start
     OK - stop
-    find_by_simulate_id
+    OK - find_by_simulate_id
     answers and feedback
     subjects
     reporter  
