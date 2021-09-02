@@ -42,11 +42,9 @@ class QuestionService:
 
     async def get_question_by_simulate(self, simulate_id: str):
         simulate_infos = await self.__mongo_instance.get_one('simulates', { '_id': ObjectId(simulate_id)})
-        # get question with filters
-        # year, subjects, questions
 
         selected_questions = await self.__mongo_instance.complex_query(
-                'somulates', 
+                'simulates', 
                 year=simulate_infos['years'], 
                 subjects=simulate_infos['subjects'], 
                 questions=simulate_infos['questions']
