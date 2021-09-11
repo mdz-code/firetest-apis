@@ -16,6 +16,9 @@ class QuestionService:
         }
         pass
 
+    async def get_all_subjects(self):
+        return await self.__mongo_instance.get_all_itens()
+
     async def start_simulate(self, train_mode: bool, user_id: str, object_infos: dict = None):
         mode = 'train' if train_mode else 'select'
         execute_function = self.__mode_dict[mode]
@@ -71,6 +74,7 @@ class QuestionService:
             user_id, object_infos.years, object_infos.subjects)
         simulate_id = await self.__mongo_instance.insert_one('simulates', dict_simulate, True)
         return str(simulate_id)
+
 
     def __create_dict_simulate(self, user_id: str, years: list = [], subjects: list = []):
         return {

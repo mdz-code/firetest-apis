@@ -9,16 +9,28 @@ class MongoDatabase:
         self.__db = self.__mongoConnect.firetest
         self.__questions_collection = self.__db.questions
         self.__users_collection = self.__db.users,
-        self.__simulates_collection = self.__db.simulates
+        self.__simulates_collection = self.__db.simulates,
+        self.__subjects_collection = self.__db.subjects,
+
         self.__dict_collection = {
             "questions": self.__questions_collection,
             "users": self.__users_collection,
-            "simulates": self.__simulates_collection
+            "simulates": self.__simulates_collection,
+            "subjects": self.__subjects_collection
         }
 
     async def insert_one(self, collection_name, inserted_object, return_id=False):
         collection = self.__dict_collection[collection_name]
         return return_id and collection.insert_one(inserted_object).inserted_id or collection.insert_one(inserted_object)
+
+    async def get_all_itens(self):
+        response_list = []
+        
+        for mongo_doc in self.__db.subjects.find({}):
+            del mongo_doc['_id']
+            response_list.append(mongo_doc)
+
+        return response_list
 
     async def get_one(self, collection_name, query_object, return_with_id=False) -> SimulateBase:
         collection = self.__dict_collection[collection_name]
