@@ -16,6 +16,15 @@ class UserService:
         self.__jwt_handler = JwtAuth()
         pass
 
+    def get_current_user(self, user_id, db):
+        response = self.__postgres_instance.get_user_by_id(user_id, db)
+        dict_response = { 'complete_name': response.__dict__['complete_name'], 'email': response.__dict__['email']}
+        return {
+                "status": status.HTTP_200_OK,
+                "response": dict_response
+            }
+
+
     def store_new_user(self, user: schemas.User, db: Session):
         founded_user = self.__postgres_instance.get_user_by_email(
             user.email, db)

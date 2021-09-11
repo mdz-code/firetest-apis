@@ -31,6 +31,11 @@ users = APIRouter(
     prefix="/users"
 )
 
+@users.get("/current_user")
+async def current_user(user_id: str = Depends(jwt_auth.auth_wrapper), db: Session = Depends(get_db)):
+    response = user_services.get_current_user(user_id, db)
+    return JSONResponse(status_code=response["status"], content=response["response"])
+
 @users.post("/create")
 async def get(user: schemas.UserCreate, db: Session = Depends(get_db)):
     response = user_services.store_new_user(user, db)

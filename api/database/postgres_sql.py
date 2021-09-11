@@ -22,6 +22,9 @@ class PostgresSQL:
     def get_user_by_email(self, email: str, db: Session):
         return db.query(models.User).filter(models.User.email == email).first()
 
+    def get_user_by_id(self, id: str, db: Session):
+        return db.query(models.User).filter(models.User.id == id).first()
+
     def auth_user(self, database_password: str, password: str):
         return hash_instance.check_password(password, database_password)
 
