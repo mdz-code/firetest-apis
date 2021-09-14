@@ -1,6 +1,7 @@
 from fastapi import status
 from bson.objectid import ObjectId
 from datetime import datetime, timedelta
+import random
 import json
 import ast
 
@@ -63,6 +64,7 @@ class QuestionService:
 
             response_list.append(question_dict)
 
+        random.shuffle(response_list)
 
         return {
             "status": status.HTTP_200_OK,
