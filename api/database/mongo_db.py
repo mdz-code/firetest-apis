@@ -15,11 +15,12 @@ class MongoDatabase:
         self.__dict_collection = {
             "questions": self.__questions_collection,
             "users": self.__users_collection,
-            "simulates": self.__simulates_collection,
+            "simulates": self.__db.simulates,
             "subjects": self.__subjects_collection
         }
 
     async def insert_one(self, collection_name, inserted_object, return_id=False):
+
         collection = self.__dict_collection[collection_name]
         return return_id and collection.insert_one(inserted_object).inserted_id or collection.insert_one(inserted_object)
 
@@ -37,12 +38,16 @@ class MongoDatabase:
         return return_with_id and collection.find_one(query_object) or collection.find_one(query_object, {'_id': 0})
 
     async def complex_query(self, collection_name, **kwargs):
+        response_list = []
         pipelines = await self.__build_pipeline(kwargs)
         collection = self.__dict_collection[collection_name]
-        # return collection.find_one(pipelines)
-        return {
-            "selected_questions": True
-        }
+        response = collection.find()
+        for item in response:
+            item['id'] = str(item['_id'])
+            del item['_id']
+            response_list.append(item)
+
+        return response_list
 
     async def __build_pipeline(self, kwargs):
         pipeline_dict = {

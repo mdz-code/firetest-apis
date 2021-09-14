@@ -1,6 +1,8 @@
 from fastapi import status
 from bson.objectid import ObjectId
 from datetime import datetime, timedelta
+import json
+import ast
 
 from ..database.mongo_db import MongoDatabase
 from ..database.schemas import ObjectInfos
@@ -44,19 +46,27 @@ class QuestionService:
         }
 
     async def get_question_by_simulate(self, simulate_id: str):
+        response_list = []
         simulate_infos = await self.__mongo_instance.get_one('simulates', { '_id': ObjectId(simulate_id)})
 
         selected_questions = await self.__mongo_instance.complex_query(
-                'simulates', 
+                'questions', 
                 year=simulate_infos['years'], 
                 subjects=simulate_infos['subjects'], 
                 questions=simulate_infos['questions']
             )
 
+        for question_dict in selected_questions:
+            for key in question_dict:
+                if '[' in question_dict[key]:
+                    question_dict[key] = ast.literal_eval(question_dict[key])
+
+            response_list.append(question_dict)
+
 
         return {
             "status": status.HTTP_200_OK,
-            "response": selected_questions
+            "response": response_list
         }
 
     async def __is_finished(self, simulate_id: str):
