@@ -40,8 +40,9 @@ class MongoDatabase:
     async def complex_query(self, collection_name, **kwargs):
         response_list = []
         pipelines = await self.__build_pipeline(kwargs)
+        print(pipelines)
         collection = self.__dict_collection[collection_name]
-        response = collection.find()
+        response = collection.find(pipelines)
         for item in response:
             item['id'] = str(item['_id'])
             del item['_id']
@@ -54,11 +55,14 @@ class MongoDatabase:
             "$and": []
         }
 
+        kwargs['subject_id'] = kwargs['subjects']
+        del kwargs['subjects']
+
         for k in kwargs:
             if k != "questions":
                 appended_dict = { "$or": []}
                 for value in kwargs[k]:
-                    appended_dict["$or"].append({ k: value })
+                    appended_dict["$or"].append({ k: str(value) })
 
                     if len(appended_dict["$or"]) > 0:
                         pipeline_dict["$and"].append(appended_dict)

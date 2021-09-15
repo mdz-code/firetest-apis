@@ -57,6 +57,8 @@ class QuestionService:
                 questions=simulate_infos['questions']
             )
 
+        print(len(selected_questions))
+
         for question_dict in selected_questions:
             for key in question_dict:
                 if '[' in question_dict[key]:
