@@ -41,6 +41,15 @@ async def get(user: schemas.UserCreate, db: Session = Depends(get_db)):
     response = user_services.store_new_user(user, db)
     return JSONResponse(status_code=response["status"], content=response["response"])
 
+@users.post('/recover', response_class=JSONResponse)
+async def recover_user(email: schemas.RecoverUser, db: Session = Depends(get_db)):
+    response = user_services.recover_user(email, db)
+    return JSONResponse(status_code=response["status"], content=response["response"])
+
+@users.get('/recover/{uuid}', response_class=JSONResponse)
+async def recover_user(uuid: str, db: Session = Depends(get_db)):
+    response = user_services.get_recover_user(uuid, db)
+    return JSONResponse(status_code=response["status"], content=response["response"])
 
 @users.post("/login", response_class=JSONResponse)
 async def get(user: schemas.UserAuth, db: Session = Depends(get_db)):

@@ -60,3 +60,6 @@ class SimulateBase(BaseModel):
     years: List[str]
     start_time: int
     end_time: int
+
+class RecoverUser(BaseModel):
+    email: str

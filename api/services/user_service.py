@@ -4,6 +4,10 @@ from ..database.mongo_db import MongoDatabase
 from ..database import schemas, postgres_sql
 from ..config.jwt import JwtAuth
 from ..config.hashed import Hash
+from ..config.mailing import Mailing
+
+from datetime import datetime, timedelta
+
 
 hash_instance = Hash()
 
@@ -14,11 +18,12 @@ class UserService:
         self.__mongo_instance = MongoDatabase()
         self.__postgres_instance = postgres_sql.PostgresSQL()
         self.__jwt_handler = JwtAuth()
+        self.__mailing = Mailing()
         pass
 
     def get_current_user(self, user_id, db):
         response = self.__postgres_instance.get_user_by_id(user_id, db)
-        dict_response = { 'complete_name': response.__dict__['complete_name'], 'email': response.__dict__['email']}
+        dict_response = { 'complete_name': response.__dict__['complete_name'], 'email': response.__dict__['email'], "premium": True}
         return {
                 "status": status.HTTP_200_OK,
                 "response": dict_response
@@ -97,12 +102,58 @@ class UserService:
             "response": { "new_token": new_token }
         }
 
+    def recover_user(self, email_dict: str, db):
+        response = self.__postgres_instance.get_user_by_email(email_dict.email, db)
+
+        user_uuid = str(response.__dict__['id'])
+        user_fullname = str(response.__dict__['complete_name'])
+        token = self.__jwt_handler.encode_token(user_uuid)
+        recover_dict = { 'user_id': user_uuid, 'used': False, 'token': token, 'subscription_date': datetime.now()}
+        new_register = self.__postgres_instance.create_recover(recover_dict, db)
+        recover_uuid = str(new_register.__dict__['id'])
+        
+        self.__mailing.send_email(email_dict.email, { 'complete_name': user_fullname, 'uuid_recover': recover_uuid })
+
+        return {
+            "status": status.HTTP_201_CREATED,
+            "response": { "recover_id": recover_uuid }
+        }
+
+    def get_recover_user(self, uuid: str, db):
+
+        response = self.__postgres_instance.get_recover_by_id(uuid, db)
+
+        if response == None:
+            return {
+                "status": status.HTTP_406_NOT_ACCEPTABLE,
+                "response": { "mensagem": "O convite não foi encontrado em nosso banco de dados." }
+            }
+
+        subscription_date = response.__dict__['subscription_date']
+        date_select = datetime.fromisoformat(subscription_date)
+        now = datetime.now()
+
+
+        if not date_select + timedelta(minutes=30) <= now:
+            token = response.__dict__['token']
+            user_uuid = str(response.__dict__['user_id'])
+
+            return {
+                "status": status.HTTP_200_OK,
+                "response": { "token": token }
+            }
+        
+        return {
+            "status": status.HTTP_403_FORBIDDEN,
+            "response": { "mensagem": "O convite já expirou, por favor realize a recuperação novamente." }
+        }
+
 
 """
-    OK - create
-    OK - login
-    OK - logout
-    OK - update
-    feedback
-    recover
+endpoint de retorno das informações
+    - retornar sempre premium true OK
+endpoint de recuperação de conta
+    - service de e-mail OK
+    - modelo de recuperação de conta OK
+    
 """

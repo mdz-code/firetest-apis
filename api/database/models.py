@@ -23,7 +23,17 @@ class Premium(Base):
 
     __tablename__ = "premium"
 
-    id = Column(UUID, primary_key=True, index=True, autoincrement=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid4)
     user_id = Column(String, unique=True)
     is_premium = Column(Boolean, default=False)
+    subscription_date = Column(DateTime, default=datetime.datetime.utcnow)
+
+class RecoverUser(Base):
+
+    __tablename__ = "recover_user"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid4)
+    user_id = Column(UUID)
+    token = Column(String)
+    used = Column(Boolean, default=False)
     subscription_date = Column(DateTime, default=datetime.datetime.utcnow)

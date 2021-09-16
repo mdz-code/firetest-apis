@@ -19,11 +19,21 @@ class PostgresSQL:
         db.refresh(db_user)
         return db_user
 
+    def create_recover(self, recover_dict: models.RecoverUser, db: Session):
+        db_recover = models.RecoverUser(user_id= recover_dict['user_id'], token= recover_dict['token'], used=recover_dict['used'], subscription_date=recover_dict['subscription_date'])
+        db.add(db_recover)
+        db.commit()
+        db.refresh(db_recover)
+        return db_recover
+
     def get_user_by_email(self, email: str, db: Session):
         return db.query(models.User).filter(models.User.email == email).first()
 
     def get_user_by_id(self, id: str, db: Session):
         return db.query(models.User).filter(models.User.id == id).first()
+
+    def get_recover_by_id(self, id: str, db: Session):
+        return db.query(models.RecoverUser).filter(models.RecoverUser.id == id).first()
 
     def auth_user(self, database_password: str, password: str):
         return hash_instance.check_password(password, database_password)
