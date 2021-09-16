@@ -3,13 +3,19 @@ import smtplib
 import email.message
 from string import Template
 
+from .variables import variables_enviroment
+
 class Mailing:
     def __init__(self):
         self.__email = "firetestapp@outlook.com"
-        self.__password = "firetest@@PP"
+        self.__password = variables_enviroment['email_password']
+        self.__templates = {
+            "recover": self.__create_recover_user_email,
+            "report": self.__create_reporter_email
+        }
         pass
         
-    def __create_recover_user_email(self, data: str):
+    def __create_recover_user_email(self, data):
         template_html = Template("""
             <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
             <html xmlns="http://www.w3.org/1999/xhtml" xmlns:o="urn:schemas-microsoft-com:office:office" style="width:100%;font-family:lato, 'helvetica neue', helvetica, arial, sans-serif;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;padding:0;Margin:0">
@@ -235,14 +241,23 @@ class Mailing:
         
         return template_html.substitute(url_recover='http://localhost:8000/users/recover/')
 
-    def send_email(self, to_address: str, email_data):
+    def __create_reporter_email(self, data):
+        template_html = Template("""
+            <h2>📢 Deu erro!</h2>
+            <h3>erro: $error_text</h3>
+        """)
+
+        return template_html.substitute(error_text=data['text'])
+
+    def send_email(self, to_address: str, email_data, type: str):
         email_instance = email.message.Message()
-        email_instance['Subject'] = "🔮 Vamos recuperar sua senha agora!"
+        email_instance['Subject'] = email_data['subject']
         email_instance['From'] = self.__email
         email_instance['To'] = to_address
         email_instance.add_header('Content-Type', 'text/html')
 
-        template_html = self.__create_recover_user_email(email_data)
+        template_functions = self.__templates[type]
+        template_html = template_functions(email_data)
         email_instance.set_payload(template_html)
 
         server_smtp = smtplib.SMTP('smtp-mail.outlook.com: 587')

@@ -112,7 +112,7 @@ class UserService:
         new_register = self.__postgres_instance.create_recover(recover_dict, db)
         recover_uuid = str(new_register.__dict__['id'])
         
-        self.__mailing.send_email(email_dict.email, { 'complete_name': user_fullname, 'uuid_recover': recover_uuid })
+        self.__mailing.send_email(email_dict.email, { 'subject': '🔮 Vamos recuperar sua senha agora!', 'complete_name': user_fullname, 'uuid_recover': recover_uuid }, 'recover')
 
         return {
             "status": status.HTTP_201_CREATED,

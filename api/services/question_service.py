@@ -7,12 +7,14 @@ import ast
 
 from ..database.mongo_db import MongoDatabase
 from ..database.schemas import ObjectInfos
+from ..config.mailing import Mailing
 
 
 class QuestionService:
 
     def __init__(self):
         self.__mongo_instance = MongoDatabase()
+        self.__mailing = Mailing()
         self.__mode_dict = {
             'train': self.__train_mode,
             'select': self.__select_mode
@@ -101,6 +103,8 @@ class QuestionService:
     async def send_report(self, user_id: str, question_id: str, text_report: str):
         dict_report = self.__create_dict_report(user_id, question_id, text_report)
         await self.__mongo_instance.insert_one('reports', dict_report)
+        for dev_email in ['lameranha@gmail.com', 'leolamerabr@gmail.com']:
+            self.__mailing.send_email(dev_email, { 'subject': '🚨 DEU ERRO NO APP!', 'text': text_report}, 'report')
         return {
             "status": status.HTTP_204_NO_CONTENT,
             "response": {}
