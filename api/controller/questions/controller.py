@@ -4,7 +4,7 @@ from fastapi.responses import JSONResponse
 
 from ...config.jwt import JwtAuth
 from ...services.question_service import QuestionService
-from ...database.schemas import SimulateDTO
+from ...database.schemas import SimulateDTO, Reporter
 
 jwe_handler = JwtAuth()
 question_service = QuestionService()
@@ -31,12 +31,12 @@ async def answers(user_id=Depends(jwe_handler.auth_wrapper)):
     return { "user_id": user_id }
 
 @questions.post("/reporter", response_class=JSONResponse)
-async def reporter(user_id=Depends(jwe_handler.auth_wrapper)):
-    return { "user_id": user_id }
+async def reporter(dto: Reporter, user_id=Depends(jwe_handler.auth_wrapper)):
+    response = await question_service.send_report(user_id, dto.question_id, dto.text_report)
+    return JSONResponse(status_code=response["status"], content=response["response"])
 
 @questions.get("/subjects", response_class=JSONResponse)
 async def subjects(user_id: str = Depends(jwe_handler.auth_wrapper)):
-    print('controller')
     subjects = await question_service.get_all_subjects()
     return { "subjects": subjects }
 

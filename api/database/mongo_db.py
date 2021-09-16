@@ -16,6 +16,7 @@ class MongoDatabase:
             "questions": self.__questions_collection,
             "users": self.__users_collection,
             "simulates": self.__db.simulates,
+            "reports": self.__db.reports,
             "subjects": self.__subjects_collection
         }
 

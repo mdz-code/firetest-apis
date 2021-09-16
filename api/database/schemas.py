@@ -46,6 +46,10 @@ class SimulateDTO(BaseModel):
     train_mode: bool
     object_infos: ObjectInfos
 
+class Reporter(BaseModel):
+    question_id: str
+    text_report: str
+
 class QuestionFeedback(BaseModel):
     question_id: str
     correct_answer: bool

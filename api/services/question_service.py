@@ -84,11 +84,9 @@ class QuestionService:
         return str(simulate_id)
 
     async def __select_mode(self, user_id: str, object_infos: ObjectInfos = None):
-        dict_simulate = self.__create_dict_simulate(
-            user_id, object_infos.years, object_infos.subjects)
+        dict_simulate = self.__create_dict_simulate(user_id, object_infos.years, object_infos.subjects)
         simulate_id = await self.__mongo_instance.insert_one('simulates', dict_simulate, True)
         return str(simulate_id)
-
 
     def __create_dict_simulate(self, user_id: str, years: list = [], subjects: list = []):
         return {
@@ -99,6 +97,24 @@ class QuestionService:
             'start_time': datetime.utcnow(),
             'end_time': None,
         }
+
+    async def send_report(self, user_id: str, question_id: str, text_report: str):
+        dict_report = self.__create_dict_report(user_id, question_id, text_report)
+        await self.__mongo_instance.insert_one('reports', dict_report)
+        return {
+            "status": status.HTTP_204_NO_CONTENT,
+            "response": {}
+        }
+
+    def __create_dict_report(self, user_id: str, question_id: str, text_report: str):
+        return {
+            'user_id': user_id,
+            'question_id': question_id,
+            'text_report': text_report,
+        }
+
+
+    
 
 
 

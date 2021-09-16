@@ -5,8 +5,8 @@ from string import Template
 
 class Mailing:
     def __init__(self):
-        self.__email = "leolamerabr@gmail.com"
-        self.__password = "Lari$$inha1102"
+        self.__email = "firetestapp@outlook.com"
+        self.__password = "firetest@@PP"
         pass
         
     def __create_recover_user_email(self, data: str):
@@ -245,7 +245,7 @@ class Mailing:
         template_html = self.__create_recover_user_email(email_data)
         email_instance.set_payload(template_html)
 
-        server_smtp = smtplib.SMTP('smtp.gmail.com: 587')
+        server_smtp = smtplib.SMTP('smtp-mail.outlook.com: 587')
         server_smtp.starttls()
 
         server_smtp.login(email_instance['From'], self.__password)
