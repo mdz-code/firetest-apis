@@ -62,7 +62,7 @@ async def get(token: str = Security(security_token)):
     return JSONResponse(status_code=response["status"], content=response["response"])
 
 @users.patch("/update", response_class=JSONResponse)
-async def update(user: schemas.UserUpdate, user_id: str = Depends(jwt_auth.auth_wrapper), db: Session = Depends(get_db)):
+async def update(user: schemas.UserDTOUpdate, user_id: str = Depends(jwt_auth.auth_wrapper), db: Session = Depends(get_db)):
     response = user_services.update_user(user_id, user, db)
     return JSONResponse(status_code=response["status"], content=response["response"])
 

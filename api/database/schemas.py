@@ -7,6 +7,10 @@ class UserInfos(BaseModel):
     institution: str
     user_id: Optional[str]
 
+class UserInfosUpdate(BaseModel):
+    schooling: Optional[str]
+    institution: Optional[str]
+
 class UserUpdate(BaseModel):
     email: Optional[str]
     complete_name: Optional[str]
@@ -33,6 +37,10 @@ class User(UserBase):
 class UserDTO(BaseModel):
     account: UserCreate
     infos: UserInfos
+
+class UserDTOUpdate(BaseModel):
+    account: UserUpdate
+    infos: UserInfosUpdate
 
 class PremiumBase(BaseModel):
     is_premium: str

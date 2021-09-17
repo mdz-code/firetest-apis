@@ -91,6 +91,17 @@ class UserService:
         }
 
     def update_user(self, user_id: str, update_dict: dict, db: Session):
+        self.__update_user(user_id, update_dict.account, db)
+        self.__update_user_infos(user_id, update_dict.infos, db)
+
+        return {
+            "status": status.HTTP_204_NO_CONTENT,
+            "response": { }
+        }
+        
+
+
+    def __update_user(self, user_id: str, update_dict: dict, db: Session):
         update_dict_cleaned = {}
 
         for key, value in update_dict:
@@ -101,11 +112,21 @@ class UserService:
                     update_dict_cleaned['hashed_password'] = hash_instance.get_hashed_password(value)
 
         self.__postgres_instance.update_user(user_id, update_dict_cleaned, db)
+        pass
 
-        return {
-            "status": status.HTTP_204_NO_CONTENT,
-            "response": { }
-        }
+    def __update_user_infos(self, user_id: str, update_dict: dict, db: Session):
+        update_dict_cleaned = {}
+
+        for key, value in update_dict:
+            if value:
+                if key != 'password':
+                    update_dict_cleaned[key] = value 
+                if key == 'password':
+                    update_dict_cleaned['hashed_password'] = hash_instance.get_hashed_password(value)
+
+        self.__postgres_instance.update_user_infos(user_id, update_dict_cleaned, db)
+        pass
+        
 
     def logout_user(self, token: str):
         new_token = self.__jwt_handler.logout(token)

@@ -53,6 +53,12 @@ class PostgresSQL:
         db.commit()
         return None
 
+    def update_user_infos(self, user_id: str, update_dict: dict, db: Session):
+        db.query(models.UserInfos).filter(models.UserInfos.user_id == user_id).update(update_dict, synchronize_session=False)
+        db.commit()
+        return None
+
+
 
 
 
