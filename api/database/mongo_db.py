@@ -41,7 +41,7 @@ class MongoDatabase:
     async def complex_query(self, collection_name, **kwargs):
         response_list = []
         pipelines = await self.__build_pipeline(kwargs)
-        print(pipelines)
+
         collection = self.__dict_collection[collection_name]
         response = collection.find(pipelines)
         for item in response:

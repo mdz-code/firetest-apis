@@ -17,6 +17,15 @@ class User(Base):
     hashed_password = Column(String)
     complete_name = Column(String)
 
+class UserInfos(Base):
+
+    __tablename__ = "user_infos"
+
+
+    id = Column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid4)
+    user_id = Column(UUID)
+    schooling = Column(String)
+    institution = Column(String)
 
 
 class Premium(Base):

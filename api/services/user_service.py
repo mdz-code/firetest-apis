@@ -22,8 +22,17 @@ class UserService:
         pass
 
     def get_current_user(self, user_id, db):
-        response = self.__postgres_instance.get_user_by_id(user_id, db)
-        dict_response = { 'complete_name': response.__dict__['complete_name'], 'email': response.__dict__['email'], "premium": True}
+        response_user = self.__postgres_instance.get_user_by_id(user_id, db)
+        response_user_infos = self.__postgres_instance.get_user_infos_by_user_id(str(response_user.__dict__['id']), db)
+
+        dict_response = { 
+            'complete_name': response_user.__dict__['complete_name'], 
+            'email': response_user.__dict__['email'], 
+            'premium': True,
+            'schooling': response_user_infos.__dict__['schooling'],
+            'institution': response_user_infos.__dict__['institution']
+        }
+
         return {
                 "status": status.HTTP_200_OK,
                 "response": dict_response
@@ -32,9 +41,12 @@ class UserService:
 
     def store_new_user(self, user: schemas.User, db: Session):
         founded_user = self.__postgres_instance.get_user_by_email(
-            user.email, db)
+            user.account.email, db)
         if not founded_user:
-            self.__postgres_instance.create_user(user, db)
+            response = self.__postgres_instance.create_user(user.account, db)
+            user.infos.user_id = str(response.__dict__['id'])
+            self.__postgres_instance.create_user_infos(user.infos, db)
+
             return {
                 "status": status.HTTP_201_CREATED,
                 "response": {

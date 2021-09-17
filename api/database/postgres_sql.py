@@ -19,6 +19,13 @@ class PostgresSQL:
         db.refresh(db_user)
         return db_user
 
+    def create_user_infos(self, user_infos: models.UserInfos, db: Session):
+        db_user_infos = models.UserInfos(user_id=user_infos.user_id, schooling=user_infos.schooling, institution=user_infos.institution)
+        db.add(db_user_infos)
+        db.commit()
+        db.refresh(db_user_infos)
+        return db_user_infos
+
     def create_recover(self, recover_dict: models.RecoverUser, db: Session):
         db_recover = models.RecoverUser(user_id= recover_dict['user_id'], token= recover_dict['token'], used=recover_dict['used'], subscription_date=recover_dict['subscription_date'])
         db.add(db_recover)
@@ -31,6 +38,9 @@ class PostgresSQL:
 
     def get_user_by_id(self, id: str, db: Session):
         return db.query(models.User).filter(models.User.id == id).first()
+
+    def get_user_infos_by_user_id(self, id: str, db: Session):
+        return db.query(models.UserInfos).filter(models.UserInfos.user_id == id).first()
 
     def get_recover_by_id(self, id: str, db: Session):
         return db.query(models.RecoverUser).filter(models.RecoverUser.id == id).first()

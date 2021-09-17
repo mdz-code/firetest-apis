@@ -1,6 +1,12 @@
 from pydantic import BaseModel
 from typing import Optional, List
 
+
+class UserInfos(BaseModel):
+    schooling: str
+    institution: str
+    user_id: Optional[str]
+
 class UserUpdate(BaseModel):
     email: Optional[str]
     complete_name: Optional[str]
@@ -23,6 +29,10 @@ class User(UserBase):
     class Config:
         orm_mode = True
 
+
+class UserDTO(BaseModel):
+    account: UserCreate
+    infos: UserInfos
 
 class PremiumBase(BaseModel):
     is_premium: str
