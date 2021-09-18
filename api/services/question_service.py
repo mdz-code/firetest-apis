@@ -67,8 +67,14 @@ class QuestionService:
         return await self.__mongo_instance.get_all_itens()
 
     async def start_simulate(self, train_mode: bool, user_id: str, object_infos: dict = None):
+
+        dict_functions = {
+            'train': self.__train_mode,
+            'select': self.__select_mode
+        }
+
         mode = 'train' if train_mode else 'select'
-        execute_function = self.__mode_dict[mode]
+        execute_function = dict_functions[mode]
         response = await execute_function(user_id, object_infos)
         return {
             "status": status.HTTP_201_CREATED,
@@ -92,6 +98,16 @@ class QuestionService:
 
     async def get_question_by_simulate(self, simulate_id: str):
         simulate_infos = await self.__mongo_instance.get_one('simulates', { '_id': ObjectId(simulate_id)})
+        if simulate_infos['mode'] == 'train':
+
+            train_questions = await self.__mongo_instance.train_mode_questions()
+            random.shuffle(train_questions)
+
+            return {
+                "status": status.HTTP_200_OK,
+                "response": train_questions
+            }
+
 
         selected_questions = await self.__mongo_instance.complex_query(
                 'questions', 
@@ -118,13 +134,14 @@ class QuestionService:
         return str(simulate_id)
 
     async def __select_mode(self, user_id: str, object_infos: ObjectInfos = None):
-        dict_simulate = self.__create_dict_simulate(user_id, object_infos.years, object_infos.subjects)
+        dict_simulate = self.__create_dict_simulate(user_id, 'select', object_infos.years, object_infos.subjects)
         simulate_id = await self.__mongo_instance.insert_one('simulates', dict_simulate, True)
         return str(simulate_id)
 
-    def __create_dict_simulate(self, user_id: str, years: list = [], subjects: list = []):
+    def __create_dict_simulate(self, user_id: str, mode='train', years: list = [], subjects: list = []):
         return {
             'user_id': user_id,
+            'mode': mode,
             'questions': [],
             'subjects': subjects,
             'years': years,

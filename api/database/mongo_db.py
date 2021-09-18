@@ -35,6 +35,16 @@ class MongoDatabase:
 
         return response_list
 
+    
+    async def train_mode_questions(self):
+        response_list = []
+        
+        for mongo_doc in self.__db.questions.find({}):
+            del mongo_doc['_id']
+            response_list.append(mongo_doc)
+
+        return response_list
+
     async def get_one(self, collection_name, query_object, return_with_id=False) -> SimulateBase:
         collection = self.__dict_collection[collection_name]
         return return_with_id and collection.find_one(query_object) or collection.find_one(query_object, {'_id': 0})
