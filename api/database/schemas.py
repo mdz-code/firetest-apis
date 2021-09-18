@@ -2,6 +2,8 @@ from pydantic import BaseModel
 from typing import Optional, List
 
 
+# USER_INFOS 
+
 class UserInfos(BaseModel):
     schooling: str
     institution: str
@@ -10,6 +12,8 @@ class UserInfos(BaseModel):
 class UserInfosUpdate(BaseModel):
     schooling: Optional[str]
     institution: Optional[str]
+
+# USER
 
 class UserUpdate(BaseModel):
     email: Optional[str]
@@ -33,7 +37,6 @@ class User(UserBase):
     class Config:
         orm_mode = True
 
-
 class UserDTO(BaseModel):
     account: UserCreate
     infos: UserInfos
@@ -41,6 +44,12 @@ class UserDTO(BaseModel):
 class UserDTOUpdate(BaseModel):
     account: UserUpdate
     infos: UserInfosUpdate
+
+# RECOVER 
+class RecoverUser(BaseModel):
+    email: str
+
+# PREMIUM
 
 class PremiumBase(BaseModel):
     is_premium: str
@@ -56,17 +65,18 @@ class Premium():
     class Config:
         orm_mode = True
 
-class ObjectInfos(BaseModel):
-    years: List[int]
-    subjects: List[str]
-
-class SimulateDTO(BaseModel):
-    train_mode: bool
-    object_infos: ObjectInfos
+# REPORTER
 
 class Reporter(BaseModel):
     question_id: str
     text_report: str
+
+# FEEDBACKS
+
+class FeedbackRegister(BaseModel):
+    question_id: str
+    correct: bool
+    feedback: str
 
 class QuestionFeedback(BaseModel):
     question_id: str
@@ -74,6 +84,28 @@ class QuestionFeedback(BaseModel):
     target: str
     score: float
 
+class QuestionFeedbackDocument(BaseModel):
+    question_id: str
+    datetime: str
+
+class ReviewFeedbackDocument(BaseModel):
+    subject_id: str
+    start_at: str
+
+class UsersFeedbackDocument(BaseModel):
+    user_id: str
+    correct_answer: List[QuestionFeedbackDocument]
+    wrong_answer: List[QuestionFeedbackDocument]
+    hard: List[QuestionFeedbackDocument]
+    medium: List[QuestionFeedbackDocument]
+    easy: List[QuestionFeedbackDocument]
+    to_review: List[ReviewFeedbackDocument]
+
+# SIMULATES
+
+class ObjectInfos(BaseModel):
+    years: List[int]
+    subjects: List[str]
 
 class SimulateBase(BaseModel):
     user_id: str
@@ -83,5 +115,6 @@ class SimulateBase(BaseModel):
     start_time: int
     end_time: int
 
-class RecoverUser(BaseModel):
-    email: str
+class SimulateDTO(BaseModel):
+    train_mode: bool
+    object_infos: ObjectInfos

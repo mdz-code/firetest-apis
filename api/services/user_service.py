@@ -8,7 +8,6 @@ from ..config.mailing import Mailing
 
 from datetime import datetime, timedelta
 
-
 hash_instance = Hash()
 
 
@@ -20,6 +19,18 @@ class UserService:
         self.__jwt_handler = JwtAuth()
         self.__mailing = Mailing()
         pass
+
+
+    async def feedback_user_questions(self, user_id: str):
+        response = await self.__mongo_instance.get_one('feedbacks', { 'user_id': user_id })
+        return {
+                "status": status.HTTP_200_OK,
+                "response": {
+                   "correct_answer": len(response['correct_answer']),
+                   "wrong_answer": len(response['wrong_answer']),
+                   "answered_questions": len(response['wrong_answer']) + len(response['correct_answer']),
+                }
+            } 
 
     def get_current_user(self, user_id, db):
         response_user = self.__postgres_instance.get_user_by_id(user_id, db)
@@ -39,13 +50,15 @@ class UserService:
             }
 
 
-    def store_new_user(self, user: schemas.User, db: Session):
+    async def store_new_user(self, user: schemas.User, db: Session):
         founded_user = self.__postgres_instance.get_user_by_email(
             user.account.email, db)
         if not founded_user:
             response = self.__postgres_instance.create_user(user.account, db)
-            user.infos.user_id = str(response.__dict__['id'])
+            user_id = str(response.__dict__['id'])
+            user.infos.user_id = user_id
             self.__postgres_instance.create_user_infos(user.infos, db)
+            await self.__register_feedback_user(user_id)
 
             return {
                 "status": status.HTTP_201_CREATED,
@@ -98,7 +111,22 @@ class UserService:
             "status": status.HTTP_204_NO_CONTENT,
             "response": { }
         }
-        
+
+    def __create_feedback_user(self, user_id: str):
+        return {
+            "user_id": user_id,
+            "correct_answer": [],
+            "wrong_answer": [],
+            "hard": [],
+            "medium": [],
+            "easy": [],
+            "to_review": []
+        }
+   
+    async def __register_feedback_user(self, user_id: str):
+        inserted_object = self.__create_feedback_user(user_id)
+        response = await self.__mongo_instance.insert_one('feedbacks', inserted_object)
+        pass
 
 
     def __update_user(self, user_id: str, update_dict: dict, db: Session):

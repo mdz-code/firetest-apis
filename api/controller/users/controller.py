@@ -38,7 +38,7 @@ async def current_user(user_id: str = Depends(jwt_auth.auth_wrapper), db: Sessio
 
 @users.post("/create")
 async def get(dto: schemas.UserDTO, db: Session = Depends(get_db)):
-    response = user_services.store_new_user(dto, db)
+    response = await user_services.store_new_user(dto, db)
     return JSONResponse(status_code=response["status"], content=response["response"])
 
 @users.post('/recover', response_class=JSONResponse)
@@ -67,8 +67,9 @@ async def update(user: schemas.UserDTOUpdate, user_id: str = Depends(jwt_auth.au
     return JSONResponse(status_code=response["status"], content=response["response"])
 
 @users.get("/feedback", response_class=JSONResponse)
-async def get():
-    return {"endpoint": "feedback"}
+async def get(user_id: str = Depends(jwt_auth.auth_wrapper)):
+    response = await user_services.feedback_user_questions(user_id)
+    return JSONResponse(status_code=response["status"], content=response["response"])
 
 
 

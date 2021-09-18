@@ -6,7 +6,7 @@ import json
 import ast
 
 from ..database.mongo_db import MongoDatabase
-from ..database.schemas import ObjectInfos
+from ..database.schemas import ObjectInfos, FeedbackRegister
 from ..config.mailing import Mailing
 
 
@@ -18,8 +18,50 @@ class QuestionService:
         self.__mode_dict = {
             'train': self.__train_mode,
             'select': self.__select_mode
+        },
+        self.__forget_goals = {
+            'easy': timedelta(days=1),
+            'medium': timedelta(days=3),
+            'hard': timedelta(days=7),
+ 
         }
         pass
+
+    async def register_feedback(self, dto: FeedbackRegister, user_id: str):
+
+        # buscar questões por uuid do usuário - OK
+        response = await self.__mongo_instance.get_one('feedbacks', { 'user_id': user_id })
+        
+        question_id = dto.question_id
+        feedback = dto.feedback
+        answer = 'correct_answer' if dto.correct else 'wrong_answer'
+        
+        feedback_list = [x for x in response[feedback]]
+        answer_list = [x for x in response[answer]]
+
+        # registrar nova question_id no correct or false
+        answer_list.append(question_id)
+        response[answer] = answer_list
+
+        # registrar nova question_id no easy, medium ou hard
+        feedback_list.append(question_id)
+        response[feedback] = feedback_list
+
+        # calculo de revisão para adicionar no registro
+        now_datetime = datetime.now()
+        goal_datetime = self.__forget_goals[feedback]
+        review_gol = now_datetime + goal_datetime
+
+        # adicionar o module_id do 
+        
+        
+        # update no registro resgatado pelo uuid
+        await self.__mongo_instance.update_one('feedbacks', { 'user_id': user_id }, response)
+
+        return {
+            "status": status.HTTP_204_NO_CONTENT,
+            "response": {}
+        }
 
     async def get_all_subjects(self):
         return await self.__mongo_instance.get_all_itens()
@@ -49,7 +91,6 @@ class QuestionService:
         }
 
     async def get_question_by_simulate(self, simulate_id: str):
-        response_list = []
         simulate_infos = await self.__mongo_instance.get_one('simulates', { '_id': ObjectId(simulate_id)})
 
         selected_questions = await self.__mongo_instance.complex_query(
@@ -59,19 +100,11 @@ class QuestionService:
                 questions=simulate_infos['questions']
             )
 
-
-        for question_dict in selected_questions:
-            for key in question_dict:
-                if '[' in question_dict[key]:
-                    question_dict[key] = ast.literal_eval(question_dict[key])
-
-            response_list.append(question_dict)
-
-        random.shuffle(response_list)
+        random.shuffle(selected_questions)
 
         return {
             "status": status.HTTP_200_OK,
-            "response": response_list
+            "response": selected_questions
         }
 
     async def __is_finished(self, simulate_id: str):

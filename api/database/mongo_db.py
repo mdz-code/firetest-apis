@@ -17,6 +17,7 @@ class MongoDatabase:
             "users": self.__users_collection,
             "simulates": self.__db.simulates,
             "reports": self.__db.reports,
+            "feedbacks": self.__db.feedbacks,
             "subjects": self.__subjects_collection
         }
 
@@ -44,6 +45,7 @@ class MongoDatabase:
 
         collection = self.__dict_collection[collection_name]
         response = collection.find(pipelines)
+
         for item in response:
             item['id'] = str(item['_id'])
             del item['_id']
