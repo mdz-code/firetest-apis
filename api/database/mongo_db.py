@@ -53,6 +53,14 @@ class MongoDatabase:
                 if datetime_now >= module_register['start_at']:
                     module_id_list.append(module_register['module_id'])
 
+            if len(response['to_review']) != 0:
+                for mongo_doc in self.__db.questions.find().limit(100):
+                    mongo_doc['id'] = str(mongo_doc['_id'])
+                    del mongo_doc['_id']
+                    response_list.append(mongo_doc)
+
+                return response_list
+
 
             for module_id in module_id_list:
                 for mongo_doc in self.__db.questions.find({ 'module_id': module_id }):
