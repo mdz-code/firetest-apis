@@ -56,6 +56,7 @@ class QuestionService:
         # adicionar o module_id da questão
         to_review_list = [x for x in response['to_review']]
         question_response = await self.__mongo_instance.get_one('questions', {'_id': ObjectId(question_id)})
+        print(question_response)
 
         if question_response['module_id'] != None:
             for module_id in question_response['module_id']:
