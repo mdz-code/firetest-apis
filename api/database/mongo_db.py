@@ -46,20 +46,30 @@ class MongoDatabase:
         datetime_now = datetime.now()
         
         response = await self.get_one('feedbacks', { 'user_id': user_id})
-        
-        for module_register in response['to_review']:
-            
-            if datetime_now >= module_register['start_at']:
-                module_id_list.append(module_register['module_id'])
+
+        if len(response['to_review']) != 0:
+            for module_register in response['to_review']:
+                
+                if datetime_now >= module_register['start_at']:
+                    module_id_list.append(module_register['module_id'])
 
 
-        for module_id in module_id_list:
-            for mongo_doc in self.__db.questions.find({ 'module_id': module_id }):
-                mongo_doc['id'] = str(mongo_doc['_id'])
-                del mongo_doc['_id']
-                response_list.append(mongo_doc)
+            for module_id in module_id_list:
+                for mongo_doc in self.__db.questions.find({ 'module_id': module_id }):
+                    mongo_doc['id'] = str(mongo_doc['_id'])
+                    del mongo_doc['_id']
+                    response_list.append(mongo_doc)
+
+            return response_list
+
+        for mongo_doc in self.__db.questions.find().limit(100):
+            mongo_doc['id'] = str(mongo_doc['_id'])
+            del mongo_doc['_id']
+            response_list.append(mongo_doc)
 
         return response_list
+
+        
 
     async def get_one(self, collection_name, query_object, return_with_id=False) -> SimulateBase:
         collection = self.__dict_collection[collection_name]
