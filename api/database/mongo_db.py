@@ -55,7 +55,7 @@ class MongoDatabase:
 
         for module_id in module_id_list:
             for mongo_doc in self.__db.questions.find({ 'module_id': module_id }):
-                mongo_doc['id'] = mongo_doc['_id']
+                mongo_doc['id'] = str(mongo_doc['_id'])
                 del mongo_doc['_id']
                 response_list.append(mongo_doc)
 
