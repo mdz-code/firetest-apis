@@ -1,5 +1,9 @@
+from datetime import datetime, timedelta
+from bson.objectid import ObjectId
+
 from ..config.mongo import MongoDB as mongoConnect
 from ..database.schemas import SimulateBase
+
 
 
 class MongoDatabase:
@@ -36,12 +40,23 @@ class MongoDatabase:
         return response_list
 
     
-    async def train_mode_questions(self):
+    async def train_mode_questions(self, user_id: str):
         response_list = []
+        module_id_list = []
+        datetime_now = datetime.now()
         
-        for mongo_doc in self.__db.questions.find({}):
-            del mongo_doc['_id']
-            response_list.append(mongo_doc)
+        response = await self.get_one('feedbacks', { 'user_id': user_id})
+        
+        for module_register in response['to_review']:
+            
+            if datetime_now >= module_register['start_at']:
+                module_id_list.append(module_register['module_id'])
+
+
+        for module_id in module_id_list:
+            for mongo_doc in self.__db.questions.find({ 'module_id': module_id }):
+                del mongo_doc['_id']
+                response_list.append(mongo_doc)
 
         return response_list
 

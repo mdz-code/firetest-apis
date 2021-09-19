@@ -41,6 +41,6 @@ async def subjects(user_id: str = Depends(jwt_handler.auth_wrapper)):
     return { "subjects": subjects }
 
 @questions.get("/{simulate_id}")
-async def question(simulate_id: str):
-    response = await question_service.get_question_by_simulate(simulate_id)
+async def question(simulate_id: str, user_id: str = Depends(jwt_handler.auth_wrapper)):
+    response = await question_service.get_question_by_simulate(simulate_id, user_id)
     return JSONResponse(status_code=response["status"], content=response["response"])

@@ -20,15 +20,16 @@ class QuestionService:
             'select': self.__select_mode
         },
         self.__forget_goals = {
-            'easy': timedelta(days=1),
+            'easy': timedelta(days=7),
             'medium': timedelta(days=3),
-            'hard': timedelta(days=7),
+            'hard': timedelta(days=1),
  
         }
         pass
 
     async def register_feedback(self, dto: FeedbackRegister, user_id: str):
 
+        print(dto)
         # buscar questões por uuid do usuário - OK
         response = await self.__mongo_instance.get_one('feedbacks', { 'user_id': user_id })
         
@@ -52,9 +53,16 @@ class QuestionService:
         goal_datetime = self.__forget_goals[feedback]
         review_gol = now_datetime + goal_datetime
 
-        # adicionar o module_id do 
-        
-        
+        # adicionar o module_id da questão
+        to_review_list = [x for x in response['to_review']]
+        question_response = await self.__mongo_instance.get_one('questions', {'_id': ObjectId(question_id)})
+
+        if question_response['module_id'] != None:
+            for module_id in question_response['module_id']:
+                to_review_list.append({ 'module_id': module_id, 'start_at': review_gol})
+
+            response['to_review'] = to_review_list
+
         # update no registro resgatado pelo uuid
         await self.__mongo_instance.update_one('feedbacks', { 'user_id': user_id }, response)
 
@@ -96,11 +104,11 @@ class QuestionService:
             "response": { "mensagem": "Esta nota já foi cancelada" }
         }
 
-    async def get_question_by_simulate(self, simulate_id: str):
+    async def get_question_by_simulate(self, simulate_id: str, user_id: str):
         simulate_infos = await self.__mongo_instance.get_one('simulates', { '_id': ObjectId(simulate_id)})
         if simulate_infos['mode'] == 'train':
 
-            train_questions = await self.__mongo_instance.train_mode_questions()
+            train_questions = await self.__mongo_instance.train_mode_questions(user_id)
             random.shuffle(train_questions)
 
             return {
@@ -165,18 +173,3 @@ class QuestionService:
             'question_id': question_id,
             'text_report': text_report,
         }
-
-
-    
-
-
-
-
-"""
-    OK - start
-    OK - stop
-    OK - find_by_simulate_id
-    answers and feedback
-    subjects
-    reporter  
-"""
