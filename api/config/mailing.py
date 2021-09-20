@@ -238,8 +238,10 @@ class Mailing:
             </body>
             </html>"""
         )
-        
-        return template_html.substitute(url_recover='http://localhost:8000/users/recover/')
+        uuid_recover = data['uuid_recover']
+        url_recover = f"https://firetest-self.vercel.app/login/change-password/{uuid_recover}"
+
+        return template_html.substitute(url_recover=url_recover)
 
     def __create_reporter_email(self, data):
         template_html = Template("""
@@ -256,6 +258,7 @@ class Mailing:
         email_instance['To'] = to_address
         email_instance.add_header('Content-Type', 'text/html')
 
+        print(email_data)
         template_functions = self.__templates[type]
         template_html = template_functions(email_data)
         email_instance.set_payload(template_html)
