@@ -104,8 +104,10 @@ class UserService:
         }
 
     def update_user(self, user_id: str, update_dict: dict, db: Session):
+        print(update_dict)
         self.__update_user(user_id, update_dict.account, db)
-        self.__update_user_infos(user_id, update_dict.infos, db)
+        if update_dict.infos != None:
+            self.__update_user_infos(user_id, update_dict.infos, db)
 
         return {
             "status": status.HTTP_204_NO_CONTENT,
@@ -133,6 +135,7 @@ class UserService:
         update_dict_cleaned = {}
 
         for key, value in update_dict:
+            print('tey')
             if value:
                 if key != 'password':
                     update_dict_cleaned[key] = value 

@@ -43,7 +43,7 @@ class UserDTO(BaseModel):
 
 class UserDTOUpdate(BaseModel):
     account: UserUpdate
-    infos: UserInfosUpdate
+    infos: Optional[UserInfosUpdate]
 
 # RECOVER 
 class RecoverUser(BaseModel):
